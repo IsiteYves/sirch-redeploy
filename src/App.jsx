@@ -30,6 +30,7 @@ function App() {
 	);
 
 	const [tabs, setTabs] = React.useState([]);
+	const [windowId, setWindowId] = React.useState(null)
 	const [data, setData] = React.useState([]);
 	const [value, setValue] = React.useState("");
 	const [sites, setSites] = React.useState([]);
@@ -102,9 +103,10 @@ function App() {
 	const handleRenderPage = async (value) => {
 		const data = await getBingSearch(value);
 		setData(data);
-		const tabs = await renderPage(hb, data);
+		const tabs = await renderPage(hb, data, windowId);
 		await updateTab(hb, tabs[0].id);
 		setTabs(tabs);
+		setWindowId(tabs[0].windowId)
 	};
 
 	const handleSubmit = async (e) => {
@@ -123,6 +125,7 @@ function App() {
 	};
 	React.useEffect(() => {
 		const container = document.getElementById("container");
+		
 		loadHyperBeam(container)
 			.then((hyperbeam) => {
 				setHb(hyperbeam);
@@ -130,6 +133,10 @@ function App() {
 			.catch((err) => {
 				console.error(err);
 			});
+			return () => {
+				hb && hb.destroy();
+			  };
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	React.useEffect(() => {
@@ -237,15 +244,14 @@ function App() {
 }
 
 const Container = styled.div`
-	width: 100%;
-	margin: auto;
+	width: max-content;
 	/* padding: 50px 0; */
 	/* background: var(--black); */
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	position: absolute;
-	right: 5%;
+	left:25%;
 	z-index: 1000;
 	.switch {
 		/* position: relative; */

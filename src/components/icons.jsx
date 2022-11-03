@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 // eslint-disable-next-line no-unused-vars
 import ContentLoader from "react-content-loader";
@@ -13,9 +13,38 @@ const Icons = ({
 	cursor,
 	setCursor,
 }) => {
+	// console.log(sites)
+	// const [site, setSite] = useState(sites.slice(0, 4));
+	// console.log(site)
+	const [currentNav, setCurrentNav] = useState(1);
+	const [tabsPerNav] = useState(4);
+	const indexOfLastTab = currentNav * tabsPerNav;
+	const indexOfFirstTab = indexOfLastTab - tabsPerNav;
+	const currentDomainRecord = sites.slice(indexOfFirstTab, indexOfLastTab);
+	const currentBingRecord = tabs.slice(indexOfFirstTab, indexOfLastTab);
+	const nNavsForDomain = Math.ceil(sites.length / tabsPerNav);
+	const nNavsForBing = Math.ceil(tabs.length / tabsPerNav);
+	
+	const nextNav = () => {
+		if (currentNav !== nNavsForBing) {
+			setCurrentNav(currentNav + 1);
+		} else if (currentNav !== nNavsForDomain) {
+			setCurrentNav(currentNav + 1);
+		}
+	};
+	const prevNav = () => {
+		if (currentNav !== 1) {
+			setCurrentNav(currentNav - 1);
+		}
+	};
+
 	const handleKeyDown = (e) => {
 		if (cursor === 3 && e.keyCode === 39) {
-			setCursor(3);
+			setCursor(0);
+			nextNav();
+		} else if (cursor === 0 && e.keyCode === 37) {
+			setCursor(3)
+			prevNav();
 		} else {
 			if (e.keyCode === 37 && cursor > 0) {
 				setCursor(cursor - 1);
@@ -60,8 +89,8 @@ const Icons = ({
 
 	return (
 		<Container>
-			{tabs.length > 0
-				? tabs.map((tab, index) =>
+			{currentBingRecord.length > 0
+				? currentBingRecord.map((tab, index) =>
 						iconNav(
 							index,
 							tab.id,
@@ -72,19 +101,17 @@ const Icons = ({
 							handleTabNav
 						)
 				  )
-				: sites.length > 0 &&
-				  sites
-						.slice(0, 4)
-						.map((site, index) =>
-							iconNav(
-								index,
-								site.id,
-								site.logo || `https://${site.domain}/favicon.ico`,
-								site.name,
-								site.domain,
-								openNewTab
-							)
-						)}
+				: currentDomainRecord.length > 0 &&
+				  currentDomainRecord.map((site, index) =>
+						iconNav(
+							index,
+							site.id,
+							site.logo || `https://${site.domain}/favicon.ico`,
+							site.name,
+							site.domain,
+							openNewTab
+						)
+				  )}
 		</Container>
 	);
 
