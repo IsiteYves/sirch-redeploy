@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import axios from "axios";
 import React from "react";
 import styled from "styled-components";
@@ -30,7 +31,7 @@ function App() {
 	);
 
 	const [tabs, setTabs] = React.useState([]);
-	const [windowId, setWindowId] = React.useState(null)
+	const [windowId, setWindowId] = React.useState(null);
 	const [data, setData] = React.useState([]);
 	const [value, setValue] = React.useState("");
 	const [sites, setSites] = React.useState([]);
@@ -104,9 +105,8 @@ function App() {
 		const data = await getBingSearch(value);
 		setData(data);
 		const tabs = await renderPage(hb, data, windowId);
-		await updateTab(hb, tabs[0].id);
 		setTabs(tabs);
-		setWindowId(tabs[0].windowId)
+		setWindowId(tabs[0].windowId);
 	};
 
 	const handleSubmit = async (e) => {
@@ -125,7 +125,7 @@ function App() {
 	};
 	React.useEffect(() => {
 		const container = document.getElementById("container");
-		
+
 		loadHyperBeam(container)
 			.then((hyperbeam) => {
 				setHb(hyperbeam);
@@ -133,24 +133,24 @@ function App() {
 			.catch((err) => {
 				console.error(err);
 			});
-			return () => {
-				hb && hb.destroy();
-			  };
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		return () => {
+			hb && hb.destroy();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
-
 	React.useEffect(() => {
 		if (sites.length === 0 && value.length === 0) {
 			setLoading(false);
 		}
 	}, [sites, value.length]);
+
 	return (
 		<>
 			<Container data-theme={theme}>
-				<label className="switch">
+				{/* <label className="switch">
 					<input type="checkbox" />
 					<span className="slider round" onClick={switchTheme}></span>
-				</label>
+				</label> */}
 
 				<Icons
 					sites={sites}
@@ -164,62 +164,64 @@ function App() {
 					}}
 				/>
 
-				<div className="search">
-					<form className="input" onSubmit={handleSubmit}>
-						<BiSearch className="icon" />
-						<input
-							type="text"
-							placeholder="Search here...."
-							value={value}
-							onChange={handleChange}
-						/>
-					</form>
-					{suggestionsActive && (
+				{cursor < 0 && (
+					<div className="search">
+						<form className="input" onSubmit={handleSubmit}>
+							<BiSearch className="icon" />
+							<input
+								type="text"
+								placeholder="Search here...."
+								value={value}
+								onChange={handleChange}
+							/>
+						</form>
+						{suggestionsActive && (
+							<div className="section">
+								<div className="title">
+									<p>Suggestions</p>
+								</div>
+								<div className="content">
+									{suggestions.length > 0 ? (
+										suggestions.map((suggestion, index) => (
+											<Suggestion
+												suggestion={suggestion}
+												key={index}
+												handleRenderPage={(query) => handleRenderPage(query)}
+											/>
+										))
+									) : (
+										<div className="para">
+											<p>No suggestions</p>
+										</div>
+									)}
+								</div>
+							</div>
+						)}
 						<div className="section">
 							<div className="title">
-								<p>Suggestions</p>
+								<p>Commands</p>
 							</div>
 							<div className="content">
-								{suggestions.length > 0 ? (
-									suggestions.map((suggestion, index) => (
-										<Suggestion
-											suggestion={suggestion}
-											key={index}
-											handleRenderPage={(query) => handleRenderPage(query)}
-										/>
-									))
-								) : (
-									<div className="para">
-										<p>No suggestions</p>
-									</div>
-								)}
+								{commands.map((command) => (
+									<Command command={command} key={command?.id} />
+								))}
 							</div>
 						</div>
-					)}
-					<div className="section">
-						<div className="title">
-							<p>Commands</p>
-						</div>
-						<div className="content">
-							{commands.map((command) => (
-								<Command command={command} key={command?.id} />
-							))}
-						</div>
+						<Instruction one={one} two={two} three={three} icon={five}>
+							{five === "right" ? (
+								<BsArrowRight className="icon" />
+							) : (
+								<BsArrowDown className="icon" />
+							)}
+						</Instruction>
 					</div>
-					<Instruction one={one} two={two} three={three} icon={five}>
-						{five === "right" ? (
-							<BsArrowRight className="icon" />
-						) : (
-							<BsArrowDown className="icon" />
-						)}
-					</Instruction>
-				</div>
+				)}
 			</Container>
 			<div
 				title="render"
 				id="container"
 				style={
-					tabs.length === 0
+					cursor < 0
 						? { height: "0vh", width: "0vw" }
 						: { height: "100%", width: "100%" }
 				}
@@ -251,7 +253,7 @@ const Container = styled.div`
 	flex-direction: column;
 	align-items: center;
 	position: absolute;
-	left:25%;
+	left: 25%;
 	z-index: 1000;
 	.switch {
 		/* position: relative; */

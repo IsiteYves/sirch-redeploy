@@ -13,18 +13,16 @@ const Icons = ({
 	cursor,
 	setCursor,
 }) => {
-	// console.log(sites)
-	// const [site, setSite] = useState(sites.slice(0, 4));
-	// console.log(site)
 	const [currentNav, setCurrentNav] = useState(1);
 	const [tabsPerNav] = useState(4);
+	const [currentTab, setCurrentTab] = useState(0);
 	const indexOfLastTab = currentNav * tabsPerNav;
 	const indexOfFirstTab = indexOfLastTab - tabsPerNav;
 	const currentDomainRecord = sites.slice(indexOfFirstTab, indexOfLastTab);
 	const currentBingRecord = tabs.slice(indexOfFirstTab, indexOfLastTab);
 	const nNavsForDomain = Math.ceil(sites.length / tabsPerNav);
 	const nNavsForBing = Math.ceil(tabs.length / tabsPerNav);
-	
+
 	const nextNav = () => {
 		if (currentNav !== nNavsForBing) {
 			setCurrentNav(currentNav + 1);
@@ -37,36 +35,51 @@ const Icons = ({
 			setCurrentNav(currentNav - 1);
 		}
 	};
-
 	const handleKeyDown = (e) => {
 		if (cursor === 3 && e.keyCode === 39) {
-			setCursor(0);
-			nextNav();
+			if (currentNav === nNavsForDomain || currentNav === nNavsForBing) {
+				setCursor(3);
+			} else {
+				setCursor(0);
+				nextNav();
+				setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
+			}
+		} else if (
+			e.keyCode === 39 &&
+			(currentTab === tabs.length - 1 || currentTab === sites.length - 1)
+		) {
+			setCursor(cursor);
+			setCurrentTab(cursor + tabsPerNav * (currentNav - 1));
 		} else if (cursor === 0 && e.keyCode === 37) {
-			setCursor(3)
-			prevNav();
+			if (currentNav === 1) {
+				setCursor(0);
+			} else {
+				setCursor(3);
+				prevNav();
+			}
 		} else {
 			if (e.keyCode === 37 && cursor > 0) {
 				setCursor(cursor - 1);
+				setCurrentTab(cursor - 1 + tabsPerNav * (currentNav - 1));
 			} else if (e.keyCode === 39 && cursor < tabs.length - 1) {
 				setCursor(cursor + 1);
+				setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
 			} else if (e.keyCode === 39 && cursor < sites.length - 1) {
 				setCursor(cursor + 1);
+				setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
 			}
 		}
 	};
-
+	
 	React.useEffect(() => {
 		if (sites.length === 0 && tabs.length === 0) {
 			setCursor(-1);
-		} else {
-			setCursor(0);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [sites, tabs]);
 
 	React.useEffect(() => {
-		tabs.length > 0 && handleRender(tabs[cursor].id);
+		tabs.length > 0 && handleRender(tabs[currentTab].id);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cursor]);
 
