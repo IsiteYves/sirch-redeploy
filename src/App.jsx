@@ -144,7 +144,6 @@ function App() {
 		}
 	}, [sites, value.length]);
 
-	console.log(cursor);
 	return (
 		<>
 			<Container data-theme={theme}>
