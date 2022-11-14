@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 // eslint-disable-next-line no-unused-vars
-import ContentLoader from "react-content-loader";
 import { openNewTab } from "../action/bingAction";
 
 const Icons = ({
   sites,
   tabs,
   data,
-  loading,
   handleRender,
   cursor,
   setCursor,
+  render,
 }) => {
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
@@ -30,11 +29,13 @@ const Icons = ({
       setCurrentNav(currentNav + 1);
     }
   };
+
   const prevNav = () => {
     if (currentNav !== 1) {
       setCurrentNav(currentNav - 1);
     }
   };
+
   const handleKeyDown = (e) => {
     if (cursor === 3 && e.keyCode === 39) {
       if (currentNav === nNavsForDomain || currentNav === nNavsForBing) {
@@ -79,7 +80,9 @@ const Icons = ({
   }, [sites, tabs]);
 
   React.useEffect(() => {
-    tabs.length > 0 && handleRender(tabs[currentTab].id);
+    if (render) {
+      tabs.length > 0 && handleRender(tabs[currentTab].id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursor]);
 

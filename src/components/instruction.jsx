@@ -2,8 +2,9 @@ import React from "react";
 import styled from "styled-components";
 
 import { AiOutlineEnter } from "react-icons/ai";
+import { BsArrowDown } from "react-icons/bs";
 
-const Instruction = ({ one, two, three, children }) => {
+const Instruction = ({ one, two, three, four, children }) => {
   return (
     <Container>
       <div className="instructions">
@@ -12,7 +13,11 @@ const Instruction = ({ one, two, three, children }) => {
       <div className="commands">
         <div className="one">
           <p>{two}</p>
-          <AiOutlineEnter className="icon" />
+          {four === "down" ? (
+            <BsArrowDown className="icon" />
+          ) : (
+            <AiOutlineEnter className="icon" />
+          )}
         </div>
         <div className="two">
           <p>{three}</p>
@@ -39,19 +44,26 @@ const Container = styled.div`
   }
 
   .instructions {
-    width: 35%;
+    width: 30%;
   }
 
   .commands {
-    width: 60%;
+    width: 65%;
     height: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 
+    .one {
+      width: 60%;
+    }
+
+    .two {
+      width: 30%;
+    }
+
     div {
-      width: 45%;
       height: 50%;
       display: flex;
       flex-direction: row;

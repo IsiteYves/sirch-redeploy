@@ -39,10 +39,13 @@ function App() {
   const [suggestions, setSuggestions] = React.useState([]);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
+  const [render, setRender] = React.useState(false);
+
   //instructions
   const [one, setOne] = React.useState("");
   const [two, setTwo] = React.useState("");
   const [three, setThree] = React.useState("");
+  const [four, setFour] = React.useState("");
   const [five, setFive] = React.useState("");
   const [hb, setHb] = React.useState(null);
 
@@ -68,12 +71,32 @@ function App() {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
   };
+
   function hasWhiteSpace(s) {
     return /\s/g.test(s);
   }
+
   const handleChange = async (e) => {
     setLoading(true);
     setValue(e.target.value.toLowerCase());
+
+    if (e.nativeEvent.data === " ") {
+      setTwo("Suggestions + stashed pages");
+      setThree("Results");
+      setFour("down");
+      setCursor(-1);
+    } else if (e.target.value.length > 0) {
+      setOne("Hit space to sirch the web");
+      setFour("down");
+      setTwo("Pages");
+      setThree("Domains");
+      setCursor(0);
+    } else {
+      setOne("Sirch the web");
+      setTwo("Save current page");
+      setThree("Suggestions");
+      setFive("right");
+    }
 
     if (hasWhiteSpace(e.target.value)) {
       setSites([]);
@@ -84,30 +107,35 @@ function App() {
     } else {
       companySuggest(e);
     }
+  };
 
-    if (e.nativeEvent.data === " ") {
-      setTwo("Google SERP");
-      setThree("Results");
-      setFive("right");
-    } else if (e.target.value.length > 0) {
-      setTwo("Go to domain");
-      setThree("Pages");
-      setFive("down");
-    } else {
-      setOne("Sirch the web");
-      setTwo("Save current page");
-      setThree("Suggestions");
-      setFive("right");
+  React.useEffect(() => {
+    setOne("Sirch the web");
+    setTwo("Save current page");
+    setThree("Suggestions");
+    setFive("right");
+  }, []);
+
+  const handleRenderPage = async (value) => {
+    if (!render) {
+      const data = await getBingSearch(value);
+      setData(data);
+      const tabs = await renderPage(hb, data, windowId);
+      setTabs(tabs);
+      setWindowId(tabs[0].windowId);
     }
   };
 
-  const handleRenderPage = async (value) => {
-    const data = await getBingSearch(value);
-    setData(data);
-    const tabs = await renderPage(hb, data, windowId);
-    setTabs(tabs);
-    setWindowId(tabs[0].windowId);
-  };
+  React.useEffect(() => {
+    if (value.length === 0) {
+      setSites([]);
+      setOne("Sirch the web");
+      setTwo("Save current page");
+      setFour("");
+      setThree("Suggestions");
+      setFive("right");
+    }
+  }, [value]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,6 +151,7 @@ function App() {
   const handleTabUpdate = async (id) => {
     await updateTab(hb, id);
   };
+
   React.useEffect(() => {
     const container = document.getElementById("container");
 
@@ -138,6 +167,20 @@ function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleKeyPressed = (e) => {
+    console.log(e.keyCode);
+  };
+
+  const handleKeyDown = (e) => {};
+
+  React.useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  });
+
   React.useEffect(() => {
     if (sites.length === 0 && value.length === 0) {
       setLoading(false);
@@ -158,13 +201,14 @@ function App() {
           data={data}
           loading={loading}
           handleRender={(id) => handleTabUpdate(id)}
+          render={render}
           cursor={cursor}
           setCursor={(x) => {
             setCursor(x);
           }}
         />
 
-        {cursor < 0 && (
+        {!render && (
           <div className="search">
             <form className="input" onSubmit={handleSubmit}>
               <BiSearch className="icon" />
@@ -172,6 +216,7 @@ function App() {
                 type="text"
                 placeholder="Search here...."
                 value={value}
+                onKeyDown={handleKeyPressed}
                 onChange={handleChange}
               />
             </form>
@@ -207,7 +252,13 @@ function App() {
                 ))}
               </div>
             </div>
-            <Instruction one={one} two={two} three={three} icon={five}>
+            <Instruction
+              one={one}
+              two={two}
+              three={three}
+              four={four}
+              icon={five}
+            >
               {five === "right" ? (
                 <BsArrowRight className="icon" />
               ) : (
@@ -221,7 +272,7 @@ function App() {
         title="render"
         id="container"
         style={
-          cursor < 0
+          !render
             ? { height: "0vh", width: "0vw" }
             : { height: "100%", width: "100%" }
         }
