@@ -4,10 +4,8 @@ import styled from "styled-components";
 const Suggestion = ({ suggestion, handleRenderPage }) => {
   return (
     <Container>
-      <div className="left" onClick={()=>handleRenderPage(suggestion.query)}>
-        <div className="icon">
-          {/* <suggestion.icon /> */}
-        </div>
+      <div className="left" onClick={() => handleRenderPage(suggestion.query)}>
+        <div className="icon">{/* <suggestion.icon /> */}</div>
         <p>{suggestion?.displayText}</p>
       </div>
       <div className="right">
