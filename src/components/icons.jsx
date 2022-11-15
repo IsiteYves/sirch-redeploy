@@ -151,8 +151,8 @@ const Icons = ({
 };
 const Container = styled.div`
   width: 650px;
-  height: 150px;
-  padding: 20px 10px;
+  height: 130px;
+  padding: 0px 10px;
   background: var(--black);
   border-radius: 0 0 10px 10px;
   display: flex;
@@ -162,7 +162,7 @@ const Container = styled.div`
 
   .selected {
     .gray {
-      background: #a9a9a9 !important;
+      background: var(--icon) !important;
     }
 
     .name {
@@ -217,7 +217,7 @@ const Container = styled.div`
       justify-content: center;
 
       img {
-        width: 35%;
+        width: 30%;
         border-radius: 5px;
         object-position: center;
       }

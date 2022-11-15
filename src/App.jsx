@@ -44,6 +44,7 @@ function App() {
   const [render, setRender] = React.useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
   const [spaceClicked, setSpaceClicked] = React.useState(false);
+  const [showSearch, setShowSearch] = React.useState(false);
 
   //instructions
   const [one, setOne] = React.useState("");
@@ -121,13 +122,11 @@ function App() {
   }, []);
 
   const handleRenderPage = async (value) => {
-    if (!render) {
-      const data = await getBingSearch(value);
-      setData(data);
-      const tabs = await renderPage(hb, data, windowId);
-      setTabs(tabs);
-      setWindowId(tabs[0].windowId);
-    }
+    const data = await getBingSearch(value);
+    setData(data);
+    const tabs = await renderPage(hb, data, windowId);
+    setTabs(tabs);
+    setWindowId(tabs[0].windowId);
   };
 
   React.useEffect(() => {
@@ -151,13 +150,6 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(false);
-    if (hasWhiteSpace(value)) {
-      await handleRenderPage(value);
-      setSuggestionsActive(false);
-    } else {
-      openNewTab(undefined, undefined, sites[cursor].domain);
-    }
   };
 
   const handleTabUpdate = async (id) => {
@@ -204,6 +196,10 @@ function App() {
   React.useEffect(() => {
     if (spaceClicked) {
       setRender(true);
+      setOne("Type any character to Sirch");
+      setTwo("Upvote");
+      setThree("Next result");
+      setFour("up");
     }
   }, [cursor]);
 
@@ -227,7 +223,6 @@ function App() {
 					<input type="checkbox" />
 					<span className="slider round" onClick={switchTheme}></span>
 				</label> */}
-
         <Icons
           sites={sites}
           tabs={tabs}
@@ -240,67 +235,69 @@ function App() {
             setCursor(x);
           }}
         />
-
-        {!render && (
-          <div className="search">
-            <form className="input" onSubmit={handleSubmit}>
-              <BiSearch className="icon" />
-              <input
-                type="text"
-                placeholder="Search here...."
-                value={value}
-                onKeyDown={handleKeyPressed}
-                onChange={handleChange}
-              />
-            </form>
-            {suggestionsActive && (
+        <div className="search">
+          {!render && (
+            <>
+              <form className="input" onSubmit={handleSubmit}>
+                <BiSearch className="icon" />
+                <input
+                  type="text"
+                  placeholder="Search here...."
+                  value={value}
+                  onKeyDown={handleKeyPressed}
+                  onChange={handleChange}
+                />
+              </form>
+              {suggestionsActive && (
+                <div className="section">
+                  <div className="title">
+                    <p>Suggestions</p>
+                  </div>
+                  <div className="content">
+                    {suggestions.length > 0 ? (
+                      suggestions.map((suggestion, index) => (
+                        <Suggestion
+                          suggestion={suggestion}
+                          key={index}
+                          selected={selectedSuggestion === index}
+                          handleRenderPage={(query) => handleRenderPage(query)}
+                        />
+                      ))
+                    ) : (
+                      <div className="para">
+                        <p>No suggestions</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="section">
                 <div className="title">
-                  <p>Suggestions</p>
+                  <p>Commands</p>
                 </div>
                 <div className="content">
-                  {suggestions.length > 0 ? (
-                    suggestions.map((suggestion, index) => (
-                      <Suggestion
-                        suggestion={suggestion}
-                        key={index}
-                        selected={selectedSuggestion === index}
-                        handleRenderPage={(query) => handleRenderPage(query)}
-                      />
-                    ))
-                  ) : (
-                    <div className="para">
-                      <p>No suggestions</p>
-                    </div>
-                  )}
+                  {commands.map((command) => (
+                    <Command command={command} key={command?.id} />
+                  ))}
                 </div>
               </div>
+            </>
+          )}
+          <Instruction
+            one={one}
+            two={two}
+            three={three}
+            four={four}
+            render={render}
+            icon={five}
+          >
+            {five === "right" ? (
+              <BsArrowRight className="icon" />
+            ) : (
+              <BsArrowDown className="icon" />
             )}
-            <div className="section">
-              <div className="title">
-                <p>Commands</p>
-              </div>
-              <div className="content">
-                {commands.map((command) => (
-                  <Command command={command} key={command?.id} />
-                ))}
-              </div>
-            </div>
-            <Instruction
-              one={one}
-              two={two}
-              three={three}
-              four={four}
-              icon={five}
-            >
-              {five === "right" ? (
-                <BsArrowRight className="icon" />
-              ) : (
-                <BsArrowDown className="icon" />
-              )}
-            </Instruction>
-          </div>
-        )}
+          </Instruction>
+        </div>
       </Container>
       <div
         title="render"
@@ -331,11 +328,15 @@ function App() {
 }
 
 const Container = styled.div`
-  width: auto;
+  width: 650px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 1000;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 650px / 2);
 
   .switch {
     display: inline-block;
