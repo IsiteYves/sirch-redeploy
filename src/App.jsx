@@ -24,12 +24,14 @@ import {
 } from "./action/bingAction";
 
 function App() {
+  //theme data
   const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const [theme, setTheme] = useLocalStorage(
     "theme",
     defaultDark ? "dark" : "light"
   );
 
+  //local data
   const [tabs, setTabs] = React.useState([]);
   const [windowId, setWindowId] = React.useState(null);
   const [data, setData] = React.useState([]);
@@ -40,6 +42,8 @@ function App() {
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
   const [render, setRender] = React.useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
+  const [spaceClicked, setSpaceClicked] = React.useState(false);
 
   //instructions
   const [one, setOne] = React.useState("");
@@ -99,7 +103,7 @@ function App() {
     }
 
     if (hasWhiteSpace(e.target.value)) {
-      setSites([]);
+      // setSites([]);
       const sug = await bingAutoSuggest(e.target.value);
       setSuggestions(sug);
       setSuggestionsActive(true);
@@ -135,6 +139,14 @@ function App() {
       setThree("Suggestions");
       setFive("right");
     }
+
+    if (!hasWhiteSpace(value)) {
+      setSpaceClicked(false);
+    }
+
+    if (hasWhiteSpace(value)) {
+      setSpaceClicked(true);
+    }
   }, [value]);
 
   const handleSubmit = async (e) => {
@@ -169,10 +181,31 @@ function App() {
   }, []);
 
   const handleKeyPressed = (e) => {
-    console.log(e.keyCode);
+    if (
+      e.keyCode === 37 ||
+      e.keyCode === 39 ||
+      e.keyCode === 38 ||
+      e.keyCode === 40
+    ) {
+      e.preventDefault();
+    }
   };
 
-  const handleKeyDown = (e) => {};
+  const handleKeyDown = (e) => {
+    if (e.keyCode === 40 && selectedSuggestion < suggestions.length - 1) {
+      setSelectedSuggestion(selectedSuggestion + 1);
+    }
+
+    if (e.keyCode === 38 && selectedSuggestion > -1) {
+      setSelectedSuggestion(selectedSuggestion - 1);
+    }
+  };
+
+  React.useEffect(() => {
+    if (spaceClicked) {
+      setRender(true);
+    }
+  }, [cursor]);
 
   React.useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -231,6 +264,7 @@ function App() {
                       <Suggestion
                         suggestion={suggestion}
                         key={index}
+                        selected={selectedSuggestion === index}
                         handleRenderPage={(query) => handleRenderPage(query)}
                       />
                     ))
