@@ -140,7 +140,7 @@ const Icons = ({
       >
         <div className="num red"></div>
         <div className="gray">
-          <img src={logo} alt={name} />
+          {logo ? <img src={logo} alt={name} /> : <p>{name.charAt(0)}</p>}
         </div>
         <div className="name">
           <p>{name}</p>
@@ -215,6 +215,11 @@ const Container = styled.div`
       display: flex;
       align-items: center;
       justify-content: center;
+
+      p {
+        font-size: 1.5em;
+        color: var(--white);
+      }
 
       img {
         width: 30%;
