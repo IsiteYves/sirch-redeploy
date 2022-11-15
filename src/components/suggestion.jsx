@@ -1,13 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
-const Suggestion = ({ suggestion, handleRenderPage }) => {
+const Suggestion = ({ suggestion, selected, handleRenderPage }) => {
   return (
-    <Container>
-      <div className="left" onClick={()=>handleRenderPage(suggestion.query)}>
-        <div className="icon">
-          {/* <suggestion.icon /> */}
-        </div>
+    <Container selected={selected}>
+      <div className="left" onClick={() => handleRenderPage(suggestion.query)}>
+        <div className="icon">{/* <suggestion.icon /> */}</div>
         <p>{suggestion?.displayText}</p>
       </div>
       <div className="right">
@@ -27,6 +25,7 @@ const Container = styled.div`
   padding: 0 10px;
   margin: 10px 0;
   border-radius: 10px;
+  background: ${(props) => (props.selected ? "var(--gray)" : "")};
 
   .left {
     display: flex;
