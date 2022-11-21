@@ -106,7 +106,7 @@ function App() {
       setUnderDomain(true);
       underDomainSearch(e.target.value);
     } else {
-      setOne("Sirch the web");
+      setOne("Type to Sirch the web");
       setTwo("Save current page");
       setThree("Suggestions");
       setFive("right");
@@ -123,13 +123,6 @@ function App() {
     }
   };
 
-  React.useEffect(() => {
-    setOne("Sirch the web");
-    setTwo("Save current page");
-    setThree("Suggestions");
-    setFive("right");
-  }, []);
-
   const handleRenderPage = async (value) => {
     const data = await getBingSearch(value);
     setData(data);
@@ -141,7 +134,7 @@ function App() {
   React.useEffect(() => {
     if (value.length === 0) {
       setSites([]);
-      setOne("Sirch the web");
+      setOne("Type to Sirch the web");
       setTwo("Save current page");
       setFour("");
       setThree("Suggestions");
@@ -213,7 +206,7 @@ function App() {
   React.useEffect(() => {
     if (spaceClicked) {
       setRender(true);
-      setOne("Type any character to Sirch");
+      setOne("Type to Sirch the web");
       setTwo("Upvote");
       setThree("Next result");
       setFour("up");
