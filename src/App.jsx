@@ -201,6 +201,16 @@ function App() {
     if (e.keyCode === 13 && selectedSuggestion > -1) {
       window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
     }
+
+    if (
+      render &&
+      (e.keyCode !== 40 ||
+        e.keyCode !== 38 ||
+        e.keyCode !== 37 ||
+        e.keyCode !== 39)
+    ) {
+      setRender(false);
+    }
   };
 
   React.useEffect(() => {
