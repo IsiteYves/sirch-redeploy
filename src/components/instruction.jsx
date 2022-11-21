@@ -35,15 +35,17 @@ const Instruction = ({ one, two, three, four, children, render }) => {
 };
 
 const Container = styled.div`
-  width: 98%;
+  width: ${(props) => (props.render ? "650px" : "98%")};
   height: 50px;
   display: flex;
   flex-direction: row;
   align-items: center;
   padding: 0 15px;
+  border-radius: ${(props) => (props.render ? "10px 10px 0 0" : "")};
   justify-content: space-between;
-  border-top: 1px solid var(--gray);
-  position: ${(props) => (props.render ? "absolute" : "relative")};
+  border-top: ${(props) => (props.render ? "" : "1px solid var(--gray)")};
+  border: ${(props) => (props.render ? "1px solid var(--gray)" : "")};
+  position: ${(props) => (props.render ? "fixed" : "relative")};
   bottom: 0;
 
   p {
