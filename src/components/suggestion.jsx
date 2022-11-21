@@ -2,6 +2,8 @@ import React from "react";
 import styled from "styled-components";
 
 const Suggestion = ({ suggestion, selected, handleRenderPage }) => {
+  console.log(suggestion);
+
   return (
     <Container selected={selected}>
       <div className="left" onClick={() => handleRenderPage(suggestion.query)}>

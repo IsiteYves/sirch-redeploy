@@ -43,6 +43,8 @@ function App() {
   const [cursor, setCursor] = React.useState(0);
   const [render, setRender] = React.useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
+  const [underDomain, setUnderDomain] = React.useState(false);
+  const [underDomainData, setUnderDomainData] = React.useState([]);
   const [spaceClicked, setSpaceClicked] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
 
@@ -81,6 +83,10 @@ function App() {
     return /\s/g.test(s);
   }
 
+  const underDomainSearch = (key) => {
+    //not yet implemented, store data in underDomainData
+  };
+
   const handleChange = async (e) => {
     setLoading(true);
     setValue(e.target.value.toLowerCase());
@@ -90,12 +96,15 @@ function App() {
       setThree("Results");
       setFour("down");
       setCursor(-1);
+      setUnderDomain(false);
     } else if (e.target.value.length > 0) {
       setOne("Hit space to sirch the web");
       setFour("down");
       setTwo("Pages");
       setThree("Domains");
       setCursor(0);
+      setUnderDomain(true);
+      underDomainSearch(e.target.value);
     } else {
       setOne("Sirch the web");
       setTwo("Save current page");
@@ -191,6 +200,14 @@ function App() {
     if (e.keyCode === 38 && selectedSuggestion > -1) {
       setSelectedSuggestion(selectedSuggestion - 1);
     }
+
+    if (e.keyCode === 13 && cursor > -1) {
+      console.log("we goo", sites[cursor]);
+    }
+
+    if (e.keyCode === 13 && selectedSuggestion > -1) {
+      window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
+    }
   };
 
   React.useEffect(() => {
@@ -239,7 +256,13 @@ function App() {
           {!render && (
             <>
               <form className="input" onSubmit={handleSubmit}>
-                <BiSearch className="icon" />
+                {underDomain && sites?.length > 0 ? (
+                  <div className="underDomain">
+                    <img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
+                  </div>
+                ) : (
+                  <BiSearch className="icon" />
+                )}
                 <input
                   type="text"
                   placeholder="Search here...."
@@ -248,6 +271,18 @@ function App() {
                   onChange={handleChange}
                 />
               </form>
+              {underDomain ? (
+                <div className="section">
+                  <div className="title">
+                    <p>Found</p>
+                  </div>
+                  <div className="content">
+                    <p>Nothing found in the selected site</p>
+                  </div>
+                </div>
+              ) : (
+                <></>
+              )}
               {suggestionsActive && (
                 <div className="section">
                   <div className="title">
@@ -255,14 +290,18 @@ function App() {
                   </div>
                   <div className="content">
                     {suggestions.length > 0 ? (
-                      suggestions.map((suggestion, index) => (
-                        <Suggestion
-                          suggestion={suggestion}
-                          key={index}
-                          selected={selectedSuggestion === index}
-                          handleRenderPage={(query) => handleRenderPage(query)}
-                        />
-                      ))
+                      suggestions
+                        .slice(0, 5)
+                        .map((suggestion, index) => (
+                          <Suggestion
+                            suggestion={suggestion}
+                            key={index}
+                            selected={selectedSuggestion === index}
+                            handleRenderPage={(query) =>
+                              handleRenderPage(query)
+                            }
+                          />
+                        ))
                     ) : (
                       <div className="para">
                         <p>No suggestions</p>
@@ -329,7 +368,7 @@ function App() {
 
 const Container = styled.div`
   width: 650px;
-  height: 100vh;
+  /* height: auto; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -430,6 +469,19 @@ const Container = styled.div`
         margin: 10px;
       }
 
+      .underDomain {
+        width: 10%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+
+        img {
+          width: 50%;
+        }
+      }
+
       input {
         width: 95%;
         height: 100%;
@@ -460,6 +512,9 @@ const Container = styled.div`
 
       .content {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
         .para {
           width: 100%;
