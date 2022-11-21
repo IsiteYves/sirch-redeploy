@@ -202,6 +202,7 @@ function App() {
       window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
     }
 
+    //user hits any character apart from arrow keys when in hyperbeam
     if (
       render &&
       (e.keyCode !== 40 ||
