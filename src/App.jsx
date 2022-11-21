@@ -271,53 +271,55 @@ function App() {
                   onChange={handleChange}
                 />
               </form>
-              {underDomain ? (
+              <div className="container">
+                {underDomain ? (
+                  <div className="section">
+                    <div className="title">
+                      <p>Found</p>
+                    </div>
+                    <div className="content">
+                      <p>Nothing found in the selected site</p>
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )}
+                {suggestionsActive && (
+                  <div className="section">
+                    <div className="title">
+                      <p>Suggestions</p>
+                    </div>
+                    <div className="content">
+                      {suggestions.length > 0 ? (
+                        suggestions
+                          .slice(0, 5)
+                          .map((suggestion, index) => (
+                            <Suggestion
+                              suggestion={suggestion}
+                              key={index}
+                              selected={selectedSuggestion === index}
+                              handleRenderPage={(query) =>
+                                handleRenderPage(query)
+                              }
+                            />
+                          ))
+                      ) : (
+                        <div className="para">
+                          <p>No suggestions</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="section">
                   <div className="title">
-                    <p>Found</p>
+                    <p>Commands</p>
                   </div>
                   <div className="content">
-                    <p>Nothing found in the selected site</p>
+                    {commands.map((command) => (
+                      <Command command={command} key={command?.id} />
+                    ))}
                   </div>
-                </div>
-              ) : (
-                <></>
-              )}
-              {suggestionsActive && (
-                <div className="section">
-                  <div className="title">
-                    <p>Suggestions</p>
-                  </div>
-                  <div className="content">
-                    {suggestions.length > 0 ? (
-                      suggestions
-                        .slice(0, 5)
-                        .map((suggestion, index) => (
-                          <Suggestion
-                            suggestion={suggestion}
-                            key={index}
-                            selected={selectedSuggestion === index}
-                            handleRenderPage={(query) =>
-                              handleRenderPage(query)
-                            }
-                          />
-                        ))
-                    ) : (
-                      <div className="para">
-                        <p>No suggestions</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="section">
-                <div className="title">
-                  <p>Commands</p>
-                </div>
-                <div className="content">
-                  {commands.map((command) => (
-                    <Command command={command} key={command?.id} />
-                  ))}
                 </div>
               </div>
             </>
@@ -490,6 +492,16 @@ const Container = styled.div`
         outline: none;
         color: var(--white);
       }
+    }
+
+    .container {
+      width: 100%;
+      height: 350px;
+      overflow-y: scroll;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .section {
