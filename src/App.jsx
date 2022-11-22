@@ -103,8 +103,8 @@ function App() {
       setTwo("Pages");
       setThree("Domains");
       setCursor(0);
-      setUnderDomain(true);
-      underDomainSearch(e.target.value);
+      // setUnderDomain(true);
+      // underDomainSearch(e.target.value);
     } else {
       setOne("Type to Sirch the web");
       setTwo("Save current page");
@@ -119,7 +119,9 @@ function App() {
       setSuggestionsActive(true);
       await handleRenderPage(e.target.value);
     } else {
-      companySuggest(e);
+      if (!underDomain) {
+        companySuggest(e);
+      }
     }
   };
 
@@ -186,8 +188,18 @@ function App() {
   };
 
   const handleKeyDown = (e) => {
+    console.log(e.keyCode);
+
     if (e.keyCode === 40 && selectedSuggestion < suggestions.length - 1) {
       setSelectedSuggestion(selectedSuggestion + 1);
+    }
+
+    if (e.keyCode === 40 && suggestions.length <= 0) {
+      setUnderDomain(true);
+    }
+
+    if (e.keyCode === 38 && suggestions.length <= 0) {
+      setUnderDomain(false);
     }
 
     if (e.keyCode === 38 && selectedSuggestion > -1) {
