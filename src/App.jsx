@@ -94,27 +94,21 @@ function App() {
       setTwo("Suggestions + stashed pages");
       setThree("Results");
       setFour("down");
-      setCursor(-1);
+      setFive("right");
       setUnderDomain(false);
     } else if (e.target.value.length > 0) {
       setOne("Hit space to sirch the web");
       setFour("down");
+      setFive("right");
       setTwo("Pages");
       setThree("Domains");
-      setCursor(0);
       underDomainSearch(e.target.value);
-    } else {
-      setOne("Type to Sirch the web");
-      setTwo("Save current page");
-      setThree("Suggestions");
-      setFive("right");
     }
 
     if (hasWhiteSpace(e.target.value)) {
       // setSites([]);
       const sug = await bingAutoSuggest(e.target.value);
       setSuggestions(sug);
-      setSuggestionsActive(true);
       await handleRenderPage(e.target.value);
     } else {
       companySuggest(e);
@@ -122,21 +116,16 @@ function App() {
   };
 
   React.useEffect(() => {
-    if (value.length === 0) {
-      setSites([]);
-      setFour("");
-      setFive("right");
-      setOne("Sirch the web");
-      setThree("Suggestions");
-      setTwo("Save current page");
-    }
-
     if (!hasWhiteSpace(value)) {
       setSpaceClicked(false);
+      setCursor(0);
+      setSuggestionsActive(false);
     }
 
     if (hasWhiteSpace(value)) {
       setSpaceClicked(true);
+      setCursor(-1);
+      setSuggestionsActive(true);
     }
   }, [value]);
 
@@ -182,19 +171,23 @@ function App() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.keyCode === 40 && selectedSuggestion < suggestions.length - 1) {
+    if (
+      e.keyCode === 40 &&
+      suggestionsActive &&
+      selectedSuggestion < suggestions.length - 1
+    ) {
       setSelectedSuggestion(selectedSuggestion + 1);
     }
 
-    if (e.keyCode === 40 && suggestions.length <= 0) {
+    if (e.keyCode === 40 && !suggestionsActive) {
       setUnderDomain(true);
     }
 
-    if (e.keyCode === 38 && suggestions.length <= 0) {
+    if (e.keyCode === 38 && suggestionsActive) {
       setUnderDomain(false);
     }
 
-    if (e.keyCode === 38 && selectedSuggestion > -1) {
+    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > -1) {
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
@@ -226,14 +219,20 @@ function App() {
   });
 
   React.useEffect(() => {
-    if (spaceClicked) {
+    if (hasWhiteSpace(value) && cursor > -1) {
       setRender(true);
       setFour("up");
       setTwo("Upvote");
+      setFive("right");
       setThree("Next result");
       setOne("Type to Sirch the web");
     }
   }, [cursor]);
+
+  React.useEffect(() => {
+    setTwo("Save current page");
+    setOne("Type to Sirch domains");
+  }, []);
 
   React.useEffect(() => {
     if (sites.length === 0 && value.length === 0) {
@@ -339,13 +338,8 @@ function App() {
             four={four}
             render={render}
             icon={five}
-          >
-            {five === "right" ? (
-              <BsArrowRight className="icon" />
-            ) : (
-              <BsArrowDown className="icon" />
-            )}
-          </Instruction>
+            five={five}
+          />
         </div>
       </Container>
       <div

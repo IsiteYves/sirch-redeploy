@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 
 import { AiOutlineEnter } from "react-icons/ai";
-import { BsArrowDown, BsArrowUp } from "react-icons/bs";
+import { BsArrowDown, BsArrowUp, BsArrowRight } from "react-icons/bs";
 
-const Instruction = ({ one, two, three, four, children, render }) => {
+const Instruction = ({ one, two, three, four, render, five }) => {
   return (
     <Container render={render}>
       <div className="instructions">
@@ -25,10 +25,14 @@ const Instruction = ({ one, two, three, four, children, render }) => {
             </>
           )}
         </div>
-        <div className="two">
-          <p>{three}</p>
-          {children}
-        </div>
+        {five === "right" ? (
+          <div className="two">
+            <p>{three}</p>
+            <BsArrowRight className="icon" />
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
     </Container>
   );
@@ -63,7 +67,7 @@ const Container = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
 
     .one {
       width: 60%;
