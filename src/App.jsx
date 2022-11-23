@@ -30,6 +30,7 @@ function App() {
 	);
 
 	//local data
+  const container = document.getElementById("container");
 	const [tabs, setTabs] = React.useState([]);
 	const [windowId, setWindowId] = React.useState(null);
 	const [data, setData] = React.useState([]);
@@ -41,6 +42,8 @@ function App() {
 	const [cursor, setCursor] = React.useState(0);
 	const [render, setRender] = React.useState(false);
 	const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
+	const [underDomain, setUnderDomain] = React.useState(false);
+	const [underDomainData, setUnderDomainData] = React.useState([]);
 	const [spaceClicked, setSpaceClicked] = React.useState(false);
 	const [showSearch, setShowSearch] = React.useState(false);
 
@@ -144,8 +147,6 @@ function App() {
 	};
 
 	React.useEffect(() => {
-		const container = document.getElementById("container");
-
 		loadHyperBeam(container)
 			.then((hyperbeam) => {
 				setHb(hyperbeam);
@@ -169,41 +170,58 @@ function App() {
 			e.preventDefault();
 		}
 	};
-
 	const handleKeyDown = (e) => {
 		if (e.keyCode === 40 && selectedSuggestion < suggestions.length - 1) {
 			setSelectedSuggestion(selectedSuggestion + 1);
 		}
 
+		if (e.keyCode === 40 && suggestions.length <= 0) {
+			setUnderDomain(true);
+		}
+
+		if (e.keyCode === 38 && suggestions.length <= 0) {
+			setUnderDomain(false);
+		}
+
 		if (e.keyCode === 38 && selectedSuggestion > -1) {
 			setSelectedSuggestion(selectedSuggestion - 1);
+		}
+
+		if (e.keyCode === 13 && cursor > -1) {
+			console.log("we goo", sites[cursor]);
+		}
+
+		if (e.keyCode === 13 && selectedSuggestion > -1) {
+			window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
+		}
+
+		//user hits any character apart from arrow keys when in hyperbeam
+		if (
+			render &&
+			(e.keyCode !== 40 ||
+				e.keyCode !== 38 ||
+				e.keyCode !== 37 ||
+				e.keyCode !== 39)
+		) {
+			setRender(false);
 		}
 	};
 
 	React.useEffect(() => {
 		if (spaceClicked) {
 			setRender(true);
-			setOne("Type any character to Sirch");
+			setOne("Type to Sirch the web");
 			setTwo("Upvote");
 			setThree("Next result");
 			setFour("up");
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cursor]);
-
-	React.useEffect(() => {
-		window.addEventListener("keydown", handleKeyDown);
-		return () => {
-			window.removeEventListener("keydown", handleKeyDown);
-		};
-	});
 
 	React.useEffect(() => {
 		if (sites.length === 0 && value.length === 0) {
 			setLoading(false);
 		}
 	}, [sites, value.length]);
-	console.log(tabs);
 	return (
 		<>
 			<Container data-theme={theme}>
@@ -227,7 +245,13 @@ function App() {
 					{!render && (
 						<>
 							<form className="input" onSubmit={handleSubmit}>
-								<BiSearch className="icon" />
+								{underDomain && sites?.length > 0 ? (
+									<div className="underDomain">
+										<img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
+									</div>
+								) : (
+									<BiSearch className="icon" />
+								)}
 								<input
 									type="text"
 									placeholder="Search here...."
@@ -236,37 +260,55 @@ function App() {
 									onChange={handleChange}
 								/>
 							</form>
-							{suggestionsActive && (
+							<div className="container">
+								{underDomain ? (
+									<div className="section">
+										<div className="title">
+											<p>Found</p>
+										</div>
+										<div className="content">
+											<p>Nothing found in the selected site</p>
+										</div>
+									</div>
+								) : (
+									<></>
+								)}
+								{suggestionsActive && (
+									<div className="section">
+										<div className="title">
+											<p>Suggestions</p>
+										</div>
+										<div className="content">
+											{suggestions.length > 0 ? (
+												suggestions
+													.slice(0, 5)
+													.map((suggestion, index) => (
+														<Suggestion
+															suggestion={suggestion}
+															key={index}
+															selected={selectedSuggestion === index}
+															handleRenderPage={(query) =>
+																handleRenderPage(query)
+															}
+														/>
+													))
+											) : (
+												<div className="para">
+													<p>No suggestions</p>
+												</div>
+											)}
+										</div>
+									</div>
+								)}
 								<div className="section">
 									<div className="title">
-										<p>Suggestions</p>
+										<p>Commands</p>
 									</div>
 									<div className="content">
-										{suggestions.length > 0 ? (
-											suggestions.map((suggestion, index) => (
-												<Suggestion
-													suggestion={suggestion}
-													key={index}
-													selected={selectedSuggestion === index}
-													handleRenderPage={(query) => handleRenderPage(query)}
-												/>
-											))
-										) : (
-											<div className="para">
-												<p>No suggestions</p>
-											</div>
-										)}
+										{commands.map((command) => (
+											<Command command={command} key={command?.id} />
+										))}
 									</div>
-								</div>
-							)}
-							<div className="section">
-								<div className="title">
-									<p>Commands</p>
-								</div>
-								<div className="content">
-									{commands.map((command) => (
-										<Command command={command} key={command?.id} />
-									))}
 								</div>
 							</div>
 						</>
@@ -316,6 +358,7 @@ function App() {
 
 const Container = styled.div`
 	width: 650px;
+	/* height: auto; */
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -416,6 +459,19 @@ const Container = styled.div`
 				margin: 10px;
 			}
 
+			.underDomain {
+				width: 10%;
+				height: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				overflow: hidden;
+
+				img {
+					width: 50%;
+				}
+			}
+
 			input {
 				width: 95%;
 				height: 100%;
@@ -424,6 +480,16 @@ const Container = styled.div`
 				outline: none;
 				color: var(--white);
 			}
+		}
+
+		.container {
+			width: 100%;
+			height: 350px;
+			overflow-y: scroll;
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
 		}
 
 		.section {
@@ -446,6 +512,9 @@ const Container = styled.div`
 
 			.content {
 				width: 100%;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
 
 				.para {
 					width: 100%;

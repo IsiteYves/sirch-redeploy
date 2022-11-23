@@ -30,17 +30,11 @@ export const updateTab = async (hb, id) => {
 
 export async function loadHyperBeam(container) {
 	try {
-		// const res = await axios.get("https://sirch-api-rajesh-vishwa.vercel.app");
-		// console.log(res.data)
-		// return await Hyperbeam(container, res.data.embed_url, {
-		// 	adminToken: res.data.admin_token,
-		// });
-		const hb = await Hyperbeam(
-			container,
-			"https://f5igmpt9xq7utwrdllv2r21fy.hyperbeam.com/o2yJZJNCQveA7YpT37Lrkw?token=JWAgFC7zqEHnbiBgFbYSOYgpUCRjrQFnxWPRAko46c0"
-		);
-		console.log(hb);
-		return hb;
+		const res = await axios.get("https://sirch-api-rajesh-vishwa.vercel.app");
+		console.log(res.data);
+		return await Hyperbeam(container, res.data.embed_url, {
+			adminToken: res.data.admin_token,
+		});
 	} catch (error) {
 		console.log(error);
 		console.log(error.response);
