@@ -233,7 +233,7 @@ function App() {
       setThree("Next result");
       setOne("Type to Sirch the web");
     }
-  }, [cursor, spaceClicked]);
+  }, [cursor]);
 
   React.useEffect(() => {
     if (sites.length === 0 && value.length === 0) {
