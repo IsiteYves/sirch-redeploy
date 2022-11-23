@@ -90,19 +90,6 @@ function App() {
     setLoading(true);
     setValue(e.target.value.toLowerCase());
 
-    if (hasWhiteSpace(e.target.value)) {
-      const sug = await bingAutoSuggest(e.target.value);
-      setSuggestions(sug);
-      setSuggestionsActive(true);
-      await handleRenderPage(e.target.value);
-    } else {
-      //   setOne("Hit space to sirch the web");
-      //   setFour("down");
-      //   setTwo("Pages");
-      //   setThree("Domains");
-      companySuggest(e);
-    }
-
     if (e.nativeEvent.data === " ") {
       setTwo("Suggestions + stashed pages");
       setThree("Results");
@@ -137,11 +124,11 @@ function App() {
   React.useEffect(() => {
     if (value.length === 0) {
       setSites([]);
-      setOne("Sirch the web");
-      setTwo("Save current page");
       setFour("");
-      setThree("Suggestions");
       setFive("right");
+      setOne("Sirch the web");
+      setThree("Suggestions");
+      setTwo("Save current page");
     }
 
     if (!hasWhiteSpace(value)) {
@@ -241,10 +228,10 @@ function App() {
   React.useEffect(() => {
     if (spaceClicked) {
       setRender(true);
-      setOne("Type to Sirch the web");
+      setFour("up");
       setTwo("Upvote");
       setThree("Next result");
-      setFour("up");
+      setOne("Type to Sirch the web");
     }
   }, [cursor]);
 
@@ -311,7 +298,7 @@ function App() {
                       <p>Suggestions</p>
                     </div>
                     <div className="content">
-                      {suggestions.length > 0 ? (
+                      {suggestions?.length > 0 ? (
                         suggestions
                           .slice(0, 5)
                           .map((suggestion, index) => (

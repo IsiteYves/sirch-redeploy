@@ -17,10 +17,10 @@ const Icons = ({
   const [currentTab, setCurrentTab] = useState(0);
   const indexOfLastTab = currentNav * tabsPerNav;
   const indexOfFirstTab = indexOfLastTab - tabsPerNav;
-  const currentDomainRecord = sites.slice(indexOfFirstTab, indexOfLastTab);
-  const currentBingRecord = tabs.slice(indexOfFirstTab, indexOfLastTab);
-  const nNavsForDomain = Math.ceil(sites.length / tabsPerNav);
-  const nNavsForBing = Math.ceil(tabs.length / tabsPerNav);
+  const currentDomainRecord = sites?.slice(indexOfFirstTab, indexOfLastTab);
+  const currentBingRecord = tabs?.slice(indexOfFirstTab, indexOfLastTab);
+  const nNavsForDomain = Math.ceil(sites?.length / tabsPerNav);
+  const nNavsForBing = Math.ceil(tabs?.length / tabsPerNav);
 
   const nextNav = () => {
     if (currentNav !== nNavsForBing) {
@@ -105,26 +105,26 @@ const Icons = ({
 
   return (
     <Container>
-      {currentBingRecord.length > 0
-        ? currentBingRecord.map((tab, index) =>
+      {currentBingRecord?.length > 0
+        ? currentBingRecord?.map((tab, index) =>
             iconNav(
               index,
-              tab.id,
-              `https://logo.clearbit.com/${getDomain(tab.pendingUrl)}` ||
-                `https://${getDomain(tab.pendingUrl)}/favicon.ico`,
-              data[index]?.name || tab.pendingUrl,
-              tab.pendingUrl,
+              tab?.id,
+              `https://logo.clearbit.com/${getDomain(tab?.pendingUrl)}` ||
+                `https://${getDomain(tab?.pendingUrl)}/favicon.ico`,
+              data[index]?.name || tab?.pendingUrl,
+              tab?.pendingUrl,
               handleTabNav
             )
           )
-        : currentDomainRecord.length > 0 &&
-          currentDomainRecord.map((site, index) =>
+        : currentDomainRecord?.length > 0 &&
+          currentDomainRecord?.map((site, index) =>
             iconNav(
               index,
-              site.id,
-              site.logo || `https://${site.domain}/favicon.ico`,
-              site.name,
-              site.domain,
+              site?.id,
+              site?.logo || `https://${site?.domain}/favicon.ico`,
+              site?.name,
+              site?.domain,
               openNewTab
             )
           )}
@@ -140,7 +140,7 @@ const Icons = ({
       >
         <div className="num red"></div>
         <div className="gray">
-          {logo ? <img src={logo} alt={name} /> : <p>{name.charAt(0)}</p>}
+          {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}
         </div>
         <div className="name">
           <p>{name}</p>
