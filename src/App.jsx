@@ -17,11 +17,9 @@ import Instruction from "./components/instruction";
 import {
   bingAutoSuggest,
   getBingSearch,
-  loadHyperBeam,
   openNewTab,
-  renderPage,
-  updateTab,
 } from "./action/bingAction";
+import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 
 function App() {
   //theme data
@@ -32,6 +30,7 @@ function App() {
   );
 
   //local data
+  const container = document.getElementById("container");
   const [tabs, setTabs] = React.useState([]);
   const [windowId, setWindowId] = React.useState(null);
   const [data, setData] = React.useState([]);
@@ -95,58 +94,38 @@ function App() {
       setTwo("Suggestions + stashed pages");
       setThree("Results");
       setFour("down");
-      setCursor(-1);
+      setFive("right");
       setUnderDomain(false);
     } else if (e.target.value.length > 0) {
       setOne("Hit space to sirch the web");
       setFour("down");
+      setFive("right");
       setTwo("Pages");
       setThree("Domains");
-      setCursor(0);
-      setUnderDomain(true);
       underDomainSearch(e.target.value);
-    } else {
-      setOne("Type to Sirch the web");
-      setTwo("Save current page");
-      setThree("Suggestions");
-      setFive("right");
     }
 
     if (hasWhiteSpace(e.target.value)) {
       // setSites([]);
       const sug = await bingAutoSuggest(e.target.value);
       setSuggestions(sug);
-      setSuggestionsActive(true);
       await handleRenderPage(e.target.value);
     } else {
       companySuggest(e);
     }
   };
 
-  const handleRenderPage = async (value) => {
-    const data = await getBingSearch(value);
-    setData(data);
-    const tabs = await renderPage(hb, data, windowId);
-    setTabs(tabs);
-    setWindowId(tabs[0].windowId);
-  };
-
   React.useEffect(() => {
-    if (value.length === 0) {
-      setSites([]);
-      setOne("Type to Sirch the web");
-      setTwo("Save current page");
-      setFour("");
-      setThree("Suggestions");
-      setFive("right");
-    }
-
     if (!hasWhiteSpace(value)) {
       setSpaceClicked(false);
+      setCursor(0);
+      setSuggestionsActive(false);
     }
 
     if (hasWhiteSpace(value)) {
       setSpaceClicked(true);
+      setCursor(-1);
+      setSuggestionsActive(true);
     }
   }, [value]);
 
@@ -159,8 +138,6 @@ function App() {
   };
 
   React.useEffect(() => {
-    const container = document.getElementById("container");
-
     loadHyperBeam(container)
       .then((hyperbeam) => {
         setHb(hyperbeam);
@@ -185,12 +162,32 @@ function App() {
     }
   };
 
+  const handleRenderPage = async (value) => {
+    const data = await getBingSearch(value);
+    setData(data);
+    const tabs = await renderPage(hb, data, windowId);
+    setTabs(tabs);
+    setWindowId(tabs[0].windowId);
+  };
+
   const handleKeyDown = (e) => {
-    if (e.keyCode === 40 && selectedSuggestion < suggestions.length - 1) {
+    if (
+      e.keyCode === 40 &&
+      suggestionsActive &&
+      selectedSuggestion < suggestions.length - 1
+    ) {
       setSelectedSuggestion(selectedSuggestion + 1);
     }
 
-    if (e.keyCode === 38 && selectedSuggestion > -1) {
+    if (e.keyCode === 40 && !suggestionsActive) {
+      setUnderDomain(true);
+    }
+
+    if (e.keyCode === 38 && suggestionsActive) {
+      setUnderDomain(false);
+    }
+
+    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > -1) {
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
@@ -215,21 +212,27 @@ function App() {
   };
 
   React.useEffect(() => {
-    if (spaceClicked) {
-      setRender(true);
-      setOne("Type to Sirch the web");
-      setTwo("Upvote");
-      setThree("Next result");
-      setFour("up");
-    }
-  }, [cursor]);
-
-  React.useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   });
+
+  React.useEffect(() => {
+    if (hasWhiteSpace(value) && cursor > -1) {
+      setRender(true);
+      setFour("up");
+      setTwo("Upvote");
+      setFive("right");
+      setThree("Next result");
+      setOne("Type to Sirch the web");
+    }
+  }, [cursor]);
+
+  React.useEffect(() => {
+    setTwo("Save current page");
+    setOne("Type to Sirch domains");
+  }, []);
 
   React.useEffect(() => {
     if (sites.length === 0 && value.length === 0) {
@@ -294,7 +297,7 @@ function App() {
                       <p>Suggestions</p>
                     </div>
                     <div className="content">
-                      {suggestions.length > 0 ? (
+                      {suggestions?.length > 0 ? (
                         suggestions
                           .slice(0, 5)
                           .map((suggestion, index) => (
@@ -335,13 +338,8 @@ function App() {
             four={four}
             render={render}
             icon={five}
-          >
-            {five === "right" ? (
-              <BsArrowRight className="icon" />
-            ) : (
-              <BsArrowDown className="icon" />
-            )}
-          </Instruction>
+            five={five}
+          />
         </div>
       </Container>
       <div
