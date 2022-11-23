@@ -12,6 +12,7 @@ const Icons = ({
   setCursor,
   render,
 }) => {
+  console.log(tabs)
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
   const [currentTab, setCurrentTab] = useState(0);
