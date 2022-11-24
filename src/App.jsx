@@ -3,7 +3,7 @@ import axios from "axios";
 import React from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
-
+import { debounce } from "lodash";
 //icons
 import { BiSearch } from "react-icons/bi";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
@@ -20,6 +20,7 @@ import {
   openNewTab,
 } from "./action/bingAction";
 import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
+import { getSavedDomains } from "./action/supabaseAction";
 
 function App() {
   //theme data
@@ -54,6 +55,44 @@ function App() {
   const [four, setFour] = React.useState("");
   const [five, setFive] = React.useState("");
   const [hb, setHb] = React.useState(null);
+
+  // supabase related state
+  const [fetchError, setFetchError] = React.useState(null);
+  const [domains, setDomains] = React.useState(null);
+
+  const fetchDomains = async () => {
+    const { data, error } = await getSavedDomains();
+    if (error) {
+      setFetchError("Could not fetch the domains");
+      setDomains(null);
+      console.log(error);
+    }
+
+    if (data) {
+      setDomains(data);
+      setFetchError(null);
+      console.log({ domains: data });
+    }
+  };
+
+  const handleSupabaseDomainCount = async (sites) => {
+    const { data, error } = await getSavedDomains();
+    if (error) {
+      // setFetchError("Could not fetch the domains");
+      //setDomains(null);
+      //console.log(error);
+    }
+    // all domains count
+    if (data) {
+      setDomains(data);
+      setSites(
+        sites.map((site) => ({
+          ...site,
+          count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
+        }))
+      );
+    }
+  };
 
   const [commands] = React.useState([
     {
@@ -138,6 +177,9 @@ function App() {
   };
 
   React.useEffect(() => {
+    // fetchDomain
+    fetchDomains();
+
     loadHyperBeam(container)
       .then((hyperbeam) => {
         setHb(hyperbeam);
@@ -258,6 +300,7 @@ function App() {
           setCursor={(x) => {
             setCursor(x);
           }}
+          updateSupabaseDomainCount={handleSupabaseDomainCount}
         />
         <div className="search">
           {!render && (
@@ -361,7 +404,15 @@ function App() {
         {}
       )
       .then((response) => {
-        setSites(response.data);
+        console.log({ sites: response.data });
+        const sites = response.data;
+        setSites(
+          sites.map((site) => ({
+            ...site,
+            count:
+              domains.find((d) => d.domain_name === site.domain)?.count || 0,
+          }))
+        );
         setLoading(false);
       })
       .catch((error) => {

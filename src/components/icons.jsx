@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import styled from "styled-components";
 // eslint-disable-next-line no-unused-vars
 import { openNewTab } from "../action/bingAction";
+import {
+  getSingleDomainByDomainName,
+  addDomain,
+} from "../action/supabaseAction";
 
 const Icons = ({
   sites,
@@ -11,6 +15,7 @@ const Icons = ({
   cursor,
   setCursor,
   render,
+  updateSupabaseDomainCount,
 }) => {
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
@@ -36,7 +41,7 @@ const Icons = ({
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = async (e) => {
     if (cursor === 3 && e.keyCode === 39) {
       if (currentNav === nNavsForDomain || currentNav === nNavsForBing) {
         setCursor(3);
@@ -68,6 +73,15 @@ const Icons = ({
       } else if (e.keyCode === 39 && cursor < sites.length - 1) {
         setCursor(cursor + 1);
         setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
+      } else if (e.keyCode === 38 && sites[cursor].domain) {
+        // save domain counter in supabase when arrow up key pressed
+        console.log({ cursor, domain: sites[cursor].domain });
+        const { data, error } = await addDomain(sites[cursor].domain);
+        if (data) {
+          //sites[cursor].count = data.count;
+          updateSupabaseDomainCount(sites);
+        }
+        console.log({ data, error });
       }
     }
   };
@@ -125,20 +139,21 @@ const Icons = ({
               site?.logo || `https://${site?.domain}/favicon.ico`,
               site?.name,
               site?.domain,
-              openNewTab
+              openNewTab,
+              site.count
             )
           )}
     </Container>
   );
 
-  function iconNav(index, id, logo, name, domain, handleTab) {
+  function iconNav(index, id, logo, name, domain, handleTab, count) {
     return (
       <div
         className={cursor === index ? "selected div" : "div"}
         onClick={() => handleTab(id, index, domain)}
         key={index}
       >
-        <div className="num red"></div>
+        <div className="num red">{count && count > 0 ? count : ""}</div>
         <div className="gray">
           {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}
         </div>
@@ -149,6 +164,7 @@ const Icons = ({
     );
   }
 };
+
 const Container = styled.div`
   width: 650px;
   height: 130px;
@@ -192,7 +208,7 @@ const Container = styled.div`
       justify-content: center;
       border-radius: 50%;
       position: absolute;
-      top: -12px;
+      top: 12px;
       right: -12px;
 
       p {
