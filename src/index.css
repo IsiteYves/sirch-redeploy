@@ -32,8 +32,11 @@
 html,
 #vid,
 body {
-	width: max-content !important;
-	margin: auto !important;
+	/* width: max-content !important; */
 	font-family: "Inter", sans-serif;
+	margin: auto !important;
 	font-size: 12px;
+	/* width: 1920px;
+	height: 100vh; */
+	/* overflow: auto;*/
 }

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 // eslint-disable-next-line no-unused-vars
-import ContentLoader from "react-content-loader";
 import { openNewTab } from "../action/bingAction";
 import {
   getSingleDomainByDomainName,
@@ -12,22 +11,21 @@ const Icons = ({
   sites,
   tabs,
   data,
-  loading,
   handleRender,
   cursor,
   setCursor,
+  render,
 }) => {
   const [currentNav, setCurrentNav] = useState(1);
   const [tabsPerNav] = useState(4);
   const [currentTab, setCurrentTab] = useState(0);
   const indexOfLastTab = currentNav * tabsPerNav;
   const indexOfFirstTab = indexOfLastTab - tabsPerNav;
-  const currentDomainRecord = sites.slice(indexOfFirstTab, indexOfLastTab);
-  const currentBingRecord = tabs.slice(indexOfFirstTab, indexOfLastTab);
-  const nNavsForDomain = Math.ceil(sites.length / tabsPerNav);
-  const nNavsForBing = Math.ceil(tabs.length / tabsPerNav);
+  const currentDomainRecord = sites?.slice(indexOfFirstTab, indexOfLastTab);
+  const currentBingRecord = tabs?.slice(indexOfFirstTab, indexOfLastTab);
+  const nNavsForDomain = Math.ceil(sites?.length / tabsPerNav);
+  const nNavsForBing = Math.ceil(tabs?.length / tabsPerNav);
 
-  console.log({ currentDomainRecord });
   const nextNav = () => {
     if (currentNav !== nNavsForBing) {
       setCurrentNav(currentNav + 1);
@@ -35,14 +33,14 @@ const Icons = ({
       setCurrentNav(currentNav + 1);
     }
   };
+
   const prevNav = () => {
     if (currentNav !== 1) {
       setCurrentNav(currentNav - 1);
     }
   };
-  const handleKeyDown = async (e) => {
-    console.log(`handleKeyDown: ${e.keyCode}`);
-    // call save domain if KeyCode===38
+
+  const handleKeyDown = (e) => {
     if (cursor === 3 && e.keyCode === 39) {
       if (currentNav === nNavsForDomain || currentNav === nNavsForBing) {
         setCursor(3);
@@ -74,14 +72,6 @@ const Icons = ({
       } else if (e.keyCode === 39 && cursor < sites.length - 1) {
         setCursor(cursor + 1);
         setCurrentTab(cursor + 1 + tabsPerNav * (currentNav - 1));
-      } else if (e.keyCode === 38 && sites[cursor].domain) {
-        // save domain counter
-        console.log({ cursor, domain: sites[cursor].domain });
-        const { data, error } = await addDomain(sites[cursor].domain);
-        if (data) {
-          sites[cursor].count = data.count;
-        }
-        console.log({ data, error });
       }
     }
   };
@@ -94,7 +84,9 @@ const Icons = ({
   }, [sites, tabs]);
 
   React.useEffect(() => {
-    tabs.length > 0 && handleRender(tabs[currentTab].id);
+    if (render) {
+      tabs.length > 0 && handleRender(tabs[currentTab].id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursor]);
 
@@ -103,7 +95,6 @@ const Icons = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   });
 
   const getDomain = (url) => {
@@ -118,46 +109,45 @@ const Icons = ({
 
   return (
     <Container>
-      {currentBingRecord.length > 0
-        ? currentBingRecord.map((tab, index) =>
+      {currentBingRecord?.length > 0
+        ? currentBingRecord?.map((tab, index) =>
             iconNav(
               index,
-              tab.id,
-              `https://logo.clearbit.com/${getDomain(tab.pendingUrl)}` ||
-                `https://${getDomain(tab.pendingUrl)}/favicon.ico`,
-              data[index]?.name || tab.pendingUrl,
-              tab.pendingUrl,
+              tab?.id,
+              `https://logo.clearbit.com/${getDomain(tab?.pendingUrl)}` ||
+                `https://${getDomain(tab?.pendingUrl)}/favicon.ico`,
+              data[index]?.name || tab?.pendingUrl,
+              tab?.pendingUrl,
               handleTabNav
             )
           )
-        : currentDomainRecord.length > 0 &&
-          currentDomainRecord.map((site, index) =>
+        : currentDomainRecord?.length > 0 &&
+          currentDomainRecord?.map((site, index) =>
             iconNav(
               index,
-              site.id,
-              site.logo || `https://${site.domain}/favicon.ico`,
-              site.name,
-              site.domain,
-              openNewTab,
-              site.count
+              site?.id,
+              site?.logo || `https://${site?.domain}/favicon.ico`,
+              site?.name,
+              site?.domain,
+              openNewTab
             )
           )}
     </Container>
   );
 
-  function iconNav(index, id, logo, name, domain, handleTab, count) {
+  function iconNav(index, id, logo, name, domain, handleTab) {
     return (
       <div
         className={cursor === index ? "selected div" : "div"}
         onClick={() => handleTab(id, index, domain)}
         key={index}
       >
-        <div className="num red">{count && count > 0 ? count : ""}</div>
+        <div className="num red"></div>
         <div className="gray">
-          <img src={logo} alt={name} />
+          {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}
         </div>
         <div className="name">
-          <p>{name.length > 21 ? name.substring(0, 8) + "..." : name}</p>
+          <p>{name}</p>
         </div>
       </div>
     );
@@ -165,9 +155,9 @@ const Icons = ({
 };
 
 const Container = styled.div`
-  min-width: 650px;
-  height: 100px;
-  padding: 20px 10px;
+  width: 650px;
+  height: 130px;
+  padding: 0px 10px;
   background: var(--black);
   border-radius: 0 0 10px 10px;
   display: flex;
@@ -176,15 +166,24 @@ const Container = styled.div`
   box-shadow: var(--shadow) 0px 10px 50px;
 
   .selected {
-    background: var(--icon);
+    .gray {
+      background: var(--icon) !important;
+    }
+
+    .name {
+      p {
+        text-decoration: underline;
+      }
+    }
   }
 
   .div {
     width: 140px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 2px;
     align-items: center;
+    justify-content: space-between;
     position: relative;
     margin: 0 10px;
     padding: 10px;
@@ -217,21 +216,26 @@ const Container = styled.div`
     .gray {
       width: 100%;
       height: 80%;
-      /* background: var(--gray); */
-      /* border-radius: 5px; */
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
 
+      p {
+        font-size: 1.5em;
+        color: var(--white);
+      }
+
       img {
-        width: 35%;
+        width: 30%;
+        border-radius: 5px;
         object-position: center;
       }
     }
 
     .name {
       width: 100%;
-      height: 20%;
+      height: 15%;
       display: flex;
       flex-direction: column;
       align-items: center;

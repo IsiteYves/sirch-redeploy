@@ -17,21 +17,20 @@ import Instruction from "./components/instruction";
 import {
   bingAutoSuggest,
   getBingSearch,
-  loadHyperBeam,
   openNewTab,
-  renderPage,
-  updateTab,
 } from "./action/bingAction";
-import { useState } from "react";
-import { getSavedDomains } from "./action/supabaseAction";
+import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 
 function App() {
+  //theme data
   const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const [theme, setTheme] = useLocalStorage(
     "theme",
     defaultDark ? "dark" : "light"
   );
 
+  //local data
+  const container = document.getElementById("container");
   const [tabs, setTabs] = React.useState([]);
   const [windowId, setWindowId] = React.useState(null);
   const [data, setData] = React.useState([]);
@@ -41,31 +40,20 @@ function App() {
   const [suggestions, setSuggestions] = React.useState([]);
   const [suggestionsActive, setSuggestionsActive] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
+  const [render, setRender] = React.useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = React.useState(-1);
+  const [underDomain, setUnderDomain] = React.useState(false);
+  const [underDomainData, setUnderDomainData] = React.useState([]);
+  const [spaceClicked, setSpaceClicked] = React.useState(false);
+  const [showSearch, setShowSearch] = React.useState(false);
+
   //instructions
   const [one, setOne] = React.useState("");
   const [two, setTwo] = React.useState("");
   const [three, setThree] = React.useState("");
+  const [four, setFour] = React.useState("");
   const [five, setFive] = React.useState("");
   const [hb, setHb] = React.useState(null);
-
-  // supabase related state
-  const [fetchError, setFetchError] = useState(null);
-  const [domains, setDomains] = useState(null);
-
-  const fetchDomains = async () => {
-    const { data, error } = await getSavedDomains();
-    if (error) {
-      setFetchError("Could not fetch the domains");
-      setDomains(null);
-      console.log(error);
-    }
-
-    if (data) {
-      setDomains(data);
-      setFetchError(null);
-      console.log({ domains: data });
-    }
-  };
 
   const [commands] = React.useState([
     {
@@ -94,66 +82,62 @@ function App() {
     return /\s/g.test(s);
   }
 
+  const underDomainSearch = (key) => {
+    //not yet implemented, store data in underDomainData
+  };
+
   const handleChange = async (e) => {
     setLoading(true);
     setValue(e.target.value.toLowerCase());
 
+    if (e.nativeEvent.data === " ") {
+      setTwo("Suggestions + stashed pages");
+      setThree("Results");
+      setFour("down");
+      setFive("right");
+      setUnderDomain(false);
+    } else if (e.target.value.length > 0) {
+      setOne("Hit space to sirch the web");
+      setFour("down");
+      setFive("right");
+      setTwo("Pages");
+      setThree("Domains");
+      underDomainSearch(e.target.value);
+    }
+
     if (hasWhiteSpace(e.target.value)) {
-      setSites([]);
+      // setSites([]);
       const sug = await bingAutoSuggest(e.target.value);
-      console.log({ sug });
       setSuggestions(sug);
-      setSuggestionsActive(true);
       await handleRenderPage(e.target.value);
     } else {
       companySuggest(e);
     }
+  };
 
-    if (e.nativeEvent.data === " ") {
-      setTwo("Google SERP");
-      setThree("Results");
-      setFive("right");
-    } else if (e.target.value.length > 0) {
-      setTwo("Go to domain");
-      setThree("Pages");
-      setFive("down");
-    } else {
-      setOne("Sirch the web");
-      setTwo("Save current page");
-      setThree("Suggestions");
-      setFive("right");
+  React.useEffect(() => {
+    if (!hasWhiteSpace(value)) {
+      setSpaceClicked(false);
+      setCursor(0);
+      setSuggestionsActive(false);
     }
-  };
 
-  const handleRenderPage = async (value) => {
-    const data = await getBingSearch(value);
-    setData(data);
-    const tabs = await renderPage(hb, data, windowId);
-    setTabs(tabs);
-    setWindowId(tabs[0].windowId);
-  };
+    if (hasWhiteSpace(value)) {
+      setSpaceClicked(true);
+      setCursor(-1);
+      setSuggestionsActive(true);
+    }
+  }, [value]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(false);
-    if (hasWhiteSpace(value)) {
-      await handleRenderPage(value);
-      setSuggestionsActive(false);
-    } else {
-      openNewTab(undefined, undefined, sites[cursor].domain);
-    }
   };
 
   const handleTabUpdate = async (id) => {
     await updateTab(hb, id);
   };
 
-  // load hyperbeam session
   React.useEffect(() => {
-    // fetchDomain
-    fetchDomains();
-    const container = document.getElementById("container");
-
     loadHyperBeam(container)
       .then((hyperbeam) => {
         setHb(hyperbeam);
@@ -165,6 +149,89 @@ function App() {
       hb && hb.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleKeyPressed = (e) => {
+    if (
+      e.keyCode === 37 ||
+      e.keyCode === 39 ||
+      e.keyCode === 38 ||
+      e.keyCode === 40
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  const handleRenderPage = async (value) => {
+    const data = await getBingSearch(value);
+    setData(data);
+    const tabs = await renderPage(hb, data, windowId);
+    setTabs(tabs);
+    setWindowId(tabs[0].windowId);
+  };
+
+  const handleKeyDown = (e) => {
+    if (
+      e.keyCode === 40 &&
+      suggestionsActive &&
+      selectedSuggestion < suggestions.length - 1
+    ) {
+      setSelectedSuggestion(selectedSuggestion + 1);
+    }
+
+    if (e.keyCode === 40 && !suggestionsActive) {
+      setUnderDomain(true);
+    }
+
+    if (e.keyCode === 38 && suggestionsActive) {
+      setUnderDomain(false);
+    }
+
+    if (e.keyCode === 38 && suggestionsActive && selectedSuggestion > -1) {
+      setSelectedSuggestion(selectedSuggestion - 1);
+    }
+
+    if (e.keyCode === 13 && cursor > -1) {
+      console.log("we goo", sites[cursor]);
+    }
+
+    if (e.keyCode === 13 && selectedSuggestion > -1) {
+      window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
+    }
+
+    //user hits any character apart from arrow keys when in hyperbeam
+    if (
+      render &&
+      (e.keyCode !== 40 ||
+        e.keyCode !== 38 ||
+        e.keyCode !== 37 ||
+        e.keyCode !== 39)
+    ) {
+      setRender(false);
+    }
+  };
+
+  React.useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  });
+
+  React.useEffect(() => {
+    if (hasWhiteSpace(value) && cursor > -1) {
+      setRender(true);
+      setFour("up");
+      setTwo("Upvote");
+      setFive("right");
+      setThree("Next result");
+      setOne("Type to Sirch the web");
+    }
+  }, [cursor]);
+
+  React.useEffect(() => {
+    setTwo("Save current page");
+    setOne("Type to Sirch domains");
   }, []);
 
   React.useEffect(() => {
@@ -180,78 +247,106 @@ function App() {
 					<input type="checkbox" />
 					<span className="slider round" onClick={switchTheme}></span>
 				</label> */}
-
         <Icons
           sites={sites}
           tabs={tabs}
           data={data}
           loading={loading}
           handleRender={(id) => handleTabUpdate(id)}
+          render={render}
           cursor={cursor}
           setCursor={(x) => {
             setCursor(x);
           }}
         />
-
-        {cursor < 0 && (
-          <div className="search">
-            <form className="input" onSubmit={handleSubmit}>
-              <BiSearch className="icon" />
-              <input
-                type="text"
-                placeholder="Search here...."
-                value={value}
-                onChange={handleChange}
-              />
-            </form>
-            {suggestionsActive && (
-              <div className="section">
-                <div className="title">
-                  <p>Suggestions</p>
-                </div>
-                <div className="content">
-                  {suggestions.length > 0 ? (
-                    suggestions.map((suggestion, index) => (
-                      <Suggestion
-                        suggestion={suggestion}
-                        key={index}
-                        handleRenderPage={(query) => handleRenderPage(query)}
-                      />
-                    ))
-                  ) : (
-                    <div className="para">
-                      <p>No suggestions</p>
+        <div className="search">
+          {!render && (
+            <>
+              <form className="input" onSubmit={handleSubmit}>
+                {underDomain && sites?.length > 0 ? (
+                  <div className="underDomain">
+                    <img src={sites[cursor]?.logo} alt={sites[cursor]?.name} />
+                  </div>
+                ) : (
+                  <BiSearch className="icon" />
+                )}
+                <input
+                  type="text"
+                  placeholder="Search here...."
+                  value={value}
+                  onKeyDown={handleKeyPressed}
+                  onChange={handleChange}
+                />
+              </form>
+              <div className="container">
+                {underDomain ? (
+                  <div className="section">
+                    <div className="title">
+                      <p>Found</p>
                     </div>
-                  )}
+                    <div className="content">
+                      <p>Nothing found in the selected site</p>
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )}
+                {suggestionsActive && (
+                  <div className="section">
+                    <div className="title">
+                      <p>Suggestions</p>
+                    </div>
+                    <div className="content">
+                      {suggestions?.length > 0 ? (
+                        suggestions
+                          .slice(0, 5)
+                          .map((suggestion, index) => (
+                            <Suggestion
+                              suggestion={suggestion}
+                              key={index}
+                              selected={selectedSuggestion === index}
+                              handleRenderPage={(query) =>
+                                handleRenderPage(query)
+                              }
+                            />
+                          ))
+                      ) : (
+                        <div className="para">
+                          <p>No suggestions</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="section">
+                  <div className="title">
+                    <p>Commands</p>
+                  </div>
+                  <div className="content">
+                    {commands.map((command) => (
+                      <Command command={command} key={command?.id} />
+                    ))}
+                  </div>
                 </div>
               </div>
-            )}
-            <div className="section">
-              <div className="title">
-                <p>Commands</p>
-              </div>
-              <div className="content">
-                {commands.map((command) => (
-                  <Command command={command} key={command?.id} />
-                ))}
-              </div>
-            </div>
-            <Instruction one={one} two={two} three={three} icon={five}>
-              {five === "right" ? (
-                <BsArrowRight className="icon" />
-              ) : (
-                <BsArrowDown className="icon" />
-              )}
-            </Instruction>
-          </div>
-        )}
+            </>
+          )}
+          <Instruction
+            one={one}
+            two={two}
+            three={three}
+            four={four}
+            render={render}
+            icon={five}
+            five={five}
+          />
+        </div>
       </Container>
-
       <div
         title="render"
         id="container"
         style={
-          cursor < 0
+          !render
             ? { height: "0vh", width: "0vw" }
             : { height: "100%", width: "100%" }
         }
@@ -266,15 +361,7 @@ function App() {
         {}
       )
       .then((response) => {
-        console.log({ sites: response.data });
-        const sites = response.data;
-        setSites(
-          sites.map((site) => ({
-            ...site,
-            count:
-              domains.find((d) => d.domain_name === site.domain)?.count || 0,
-          }))
-        );
+        setSites(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -284,17 +371,17 @@ function App() {
 }
 
 const Container = styled.div`
-  width: max-content;
-  /* padding: 50px 0; */
-  /* background: var(--black); */
+  width: 650px;
+  /* height: auto; */
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: absolute;
-  left: 25%;
   z-index: 1000;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 650px / 2);
+
   .switch {
-    /* position: relative; */
     display: inline-block;
     width: 60px;
     height: 34px;
@@ -386,6 +473,19 @@ const Container = styled.div`
         margin: 10px;
       }
 
+      .underDomain {
+        width: 10%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+
+        img {
+          width: 50%;
+        }
+      }
+
       input {
         width: 95%;
         height: 100%;
@@ -394,6 +494,16 @@ const Container = styled.div`
         outline: none;
         color: var(--white);
       }
+    }
+
+    .container {
+      width: 100%;
+      height: 350px;
+      overflow-y: scroll;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .section {
@@ -416,6 +526,9 @@ const Container = styled.div`
 
       .content {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
         .para {
           width: 100%;
