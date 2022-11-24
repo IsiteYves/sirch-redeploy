@@ -225,7 +225,7 @@ function App() {
       setUnderDomain(true);
     }
 
-    if (e.keyCode === 38 && suggestionsActive) {
+    if (e.keyCode === 38 && !suggestionsActive) {
       setUnderDomain(false);
     }
 
