@@ -22,6 +22,8 @@ import {
   renderPage,
   updateTab,
 } from "./action/bingAction";
+import { useState } from "react";
+import { getSavedDomains } from "./action/supabaseAction";
 
 function App() {
   const defaultDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -45,6 +47,25 @@ function App() {
   const [three, setThree] = React.useState("");
   const [five, setFive] = React.useState("");
   const [hb, setHb] = React.useState(null);
+
+  // supabase related state
+  const [fetchError, setFetchError] = useState(null);
+  const [domains, setDomains] = useState(null);
+
+  const fetchDomains = async () => {
+    const { data, error } = await getSavedDomains();
+    if (error) {
+      setFetchError("Could not fetch the domains");
+      setDomains(null);
+      console.log(error);
+    }
+
+    if (data) {
+      setDomains(data);
+      setFetchError(null);
+      console.log({ domains: data });
+    }
+  };
 
   const [commands] = React.useState([
     {
@@ -80,6 +101,7 @@ function App() {
     if (hasWhiteSpace(e.target.value)) {
       setSites([]);
       const sug = await bingAutoSuggest(e.target.value);
+      console.log({ sug });
       setSuggestions(sug);
       setSuggestionsActive(true);
       await handleRenderPage(e.target.value);
@@ -128,6 +150,8 @@ function App() {
 
   // load hyperbeam session
   React.useEffect(() => {
+    // fetchDomain
+    fetchDomains();
     const container = document.getElementById("container");
 
     loadHyperBeam(container)
@@ -242,7 +266,15 @@ function App() {
         {}
       )
       .then((response) => {
-        setSites(response.data);
+        console.log({ sites: response.data });
+        const sites = response.data;
+        setSites(
+          sites.map((site) => ({
+            ...site,
+            count:
+              domains.find((d) => d.domain_name === site.domain)?.count || 0,
+          }))
+        );
         setLoading(false);
       })
       .catch((error) => {
