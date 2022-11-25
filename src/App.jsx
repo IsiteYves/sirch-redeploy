@@ -3,22 +3,17 @@ import axios from "axios";
 import React from "react";
 import styled from "styled-components";
 import useLocalStorage from "use-local-storage";
-import { debounce } from "lodash";
+
 //icons
 import { BiSearch } from "react-icons/bi";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
-import { BsArrowRight, BsArrowDown } from "react-icons/bs";
 
 //components
 import Icons from "./components/icons";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
-import {
-  bingAutoSuggest,
-  getBingSearch,
-  openNewTab,
-} from "./action/bingAction";
+import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
 import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
 import { getSavedDomains } from "./action/supabaseAction";
 
