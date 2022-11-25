@@ -153,7 +153,9 @@ const Icons = ({
         onClick={() => handleTab(id, index, domain)}
         key={index}
       >
-        <div className="num red">{count && count > 0 ? count : ""}</div>
+        <div className={count && count > 0 ? "num" : ""}>
+          {count && count > 0 ? count : ""}
+        </div>
         <div className="gray">
           {logo ? <img src={logo} alt={name} /> : <p>{name?.charAt(0)}</p>}
         </div>
@@ -202,26 +204,17 @@ const Container = styled.div`
     cursor: pointer;
 
     .num {
+      width: 25px;
+      height: 25px;
       color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
       position: absolute;
-      top: 12px;
-      right: -12px;
-
-      p {
-        padding: 5px;
-      }
-    }
-
-    .red {
+      top: 5px;
+      right: -5px;
       background: var(--red);
-    }
-
-    .blue {
-      background: var(--blue);
     }
 
     .gray {

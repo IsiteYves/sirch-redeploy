@@ -124,13 +124,7 @@ function App() {
     setLoading(true);
     setValue(e.target.value.toLowerCase());
 
-    if (e.nativeEvent.data === " ") {
-      setTwo("Suggestions + stashed pages");
-      setThree("Results");
-      setFour("down");
-      setFive("right");
-      setUnderDomain(false);
-    } else if (e.target.value.length > 0) {
+    if (e.target.value.length > 0) {
       setOne("Hit space to sirch the web");
       setFour("down");
       setFive("right");
@@ -140,7 +134,15 @@ function App() {
     }
 
     if (hasWhiteSpace(e.target.value)) {
-      // setSites([]);
+      setSites([]);
+      //changing the instructions
+      setTwo("Suggestions + stashed pages");
+      setThree("Results");
+      setFour("down");
+      setFive("right");
+      setUnderDomain(false);
+
+      //getting suggestions from bing api
       const sug = await bingAutoSuggest(e.target.value);
       setSuggestions(sug);
       await handleRenderPage(e.target.value);
