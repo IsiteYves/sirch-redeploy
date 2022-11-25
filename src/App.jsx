@@ -134,7 +134,6 @@ function App() {
     }
 
     if (hasWhiteSpace(e.target.value)) {
-      setSites([]);
       //changing the instructions
       setTwo("Suggestions + stashed pages");
       setThree("Results");
@@ -162,6 +161,10 @@ function App() {
       setSpaceClicked(true);
       setCursor(-1);
       setSuggestionsActive(true);
+    }
+
+    if (value.length === 0) {
+      setSites([]);
     }
   }, [value]);
 
@@ -401,7 +404,6 @@ function App() {
         {}
       )
       .then((response) => {
-        console.log({ sites: response.data });
         const sites = response.data;
         setSites(
           sites.map((site) => ({
