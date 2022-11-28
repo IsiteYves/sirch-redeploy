@@ -141,6 +141,9 @@ function App() {
       setFive("right");
       setUnderDomain(false);
 
+      //removing the current icons
+      setSites([]);
+
       //getting suggestions from bing api
       const sug = await bingAutoSuggest(e.target.value);
       setSuggestions(sug);
