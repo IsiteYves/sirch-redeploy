@@ -558,6 +558,27 @@ const Container = styled.div`
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+
+      /* width */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      /* Track */
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: var(--gray);
+        border-radius: 10px;
+      }
+
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--icon);
+      }
     }
 
     .section {

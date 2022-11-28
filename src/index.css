@@ -1,42 +1,42 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&display=swap");
 
 :root {
-	--black: #0b0b0b;
-	--red: #db0000;
-	--blue: #0030db;
-	--gray: #313131;
-	--white: #ffffff;
-	--icon: #1e1616;
-	--text: #f3f3f3;
-	--shadow: #b3b3b324;
+  --black: #0b0b0b;
+  --red: #db0000;
+  --blue: #0030db;
+  --gray: #313131;
+  --white: #ffffff;
+  --icon: #1e1616;
+  --text: #f3f3f3;
+  --shadow: #b3b3b324;
 }
 
 [data-theme="dark"] {
-	--black: #ffffff;
-	--red: #db0000;
-	--blue: #0030db;
-	--gray: #e6e6e6;
-	--white: #151313;
-	--icon: #d4d4d4;
-	--shadow: #00000022;
-	--text: #151313;
+  --black: #ffffff;
+  --red: #db0000;
+  --blue: #0030db;
+  --gray: #e6e6e6;
+  --white: #151313;
+  --icon: #d4d4d4;
+  --shadow: #00000022;
+  --text: #151313;
 }
 
 * {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 html,
 #vid,
 body {
-	/* width: max-content !important; */
-	font-family: "Inter", sans-serif;
-	margin: auto !important;
-	font-size: 12px;
-	/* width: 1920px;
+  /* width: max-content !important; */
+  font-family: "Inter", sans-serif;
+  margin: auto !important;
+  font-size: 12px;
+  /* width: 1920px;
 	height: 100vh; */
-	/* overflow: auto;*/
+  /* overflow: auto;*/
 }
