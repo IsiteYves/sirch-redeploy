@@ -236,11 +236,12 @@ function App() {
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
-    if (e.keyCode === 13 && cursor > -1) {
+    if (e.keyCode === 13 && cursor > -1 && !render) {
       console.log("we goo", sites[cursor]);
+      window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
-    if (e.keyCode === 13 && selectedSuggestion > -1) {
+    if (e.keyCode === 13 && selectedSuggestion > -1 && !render) {
       window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
     }
 
