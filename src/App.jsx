@@ -7,19 +7,15 @@ import useLocalStorage from "use-local-storage";
 //icons
 import { BiSearch } from "react-icons/bi";
 import { CopyIcon, CopiedIcon } from "./icons/icons";
-import { BsArrowRight, BsArrowDown } from "react-icons/bs";
 
 //components
 import Icons from "./components/icons";
 import Command from "./components/command";
 import Suggestion from "./components/suggestion";
 import Instruction from "./components/instruction";
-import {
-  bingAutoSuggest,
-  getBingSearch,
-  openNewTab,
-} from "./action/bingAction";
+import { bingAutoSuggest, getBingSearch } from "./action/bingAction";
 import { loadHyperBeam, renderPage, updateTab } from "./action/hyperBeam";
+import { getSavedDomains } from "./action/supabaseAction";
 
 function App() {
   //theme data
@@ -54,6 +50,44 @@ function App() {
   const [four, setFour] = React.useState("");
   const [five, setFive] = React.useState("");
   const [hb, setHb] = React.useState(null);
+
+  // supabase related state
+  const [fetchError, setFetchError] = React.useState(null);
+  const [domains, setDomains] = React.useState(null);
+
+  const fetchDomains = async () => {
+    const { data, error } = await getSavedDomains();
+    if (error) {
+      setFetchError("Could not fetch the domains");
+      setDomains(null);
+      console.log(error);
+    }
+
+    if (data) {
+      setDomains(data);
+      setFetchError(null);
+      console.log({ domains: data });
+    }
+  };
+
+  const handleSupabaseDomainCount = async (sites) => {
+    const { data, error } = await getSavedDomains();
+    if (error) {
+      // setFetchError("Could not fetch the domains");
+      //setDomains(null);
+      //console.log(error);
+    }
+    // all domains count
+    if (data) {
+      setDomains(data);
+      setSites(
+        sites.map((site) => ({
+          ...site,
+          count: domains.find((d) => d.domain_name === site.domain)?.count || 0,
+        }))
+      );
+    }
+  };
 
   const [commands] = React.useState([
     {
@@ -90,13 +124,7 @@ function App() {
     setLoading(true);
     setValue(e.target.value.toLowerCase());
 
-    if (e.nativeEvent.data === " ") {
-      setTwo("Suggestions + stashed pages");
-      setThree("Results");
-      setFour("down");
-      setFive("right");
-      setUnderDomain(false);
-    } else if (e.target.value.length > 0) {
+    if (e.target.value.length > 0) {
       setOne("Hit space to sirch the web");
       setFour("down");
       setFive("right");
@@ -106,7 +134,17 @@ function App() {
     }
 
     if (hasWhiteSpace(e.target.value)) {
-      // setSites([]);
+      //changing the instructions
+      setTwo("Suggestions + stashed pages");
+      setThree("Results");
+      setFour("down");
+      setFive("right");
+      setUnderDomain(false);
+
+      //removing the current icons
+      setSites([]);
+
+      //getting suggestions from bing api
       const sug = await bingAutoSuggest(e.target.value);
       setSuggestions(sug);
       await handleRenderPage(e.target.value);
@@ -127,6 +165,10 @@ function App() {
       setCursor(-1);
       setSuggestionsActive(true);
     }
+
+    if (value.length === 0) {
+      setSites([]);
+    }
   }, [value]);
 
   const handleSubmit = async (e) => {
@@ -138,6 +180,9 @@ function App() {
   };
 
   React.useEffect(() => {
+    // fetchDomain
+    fetchDomains();
+
     loadHyperBeam(container)
       .then((hyperbeam) => {
         setHb(hyperbeam);
@@ -183,7 +228,7 @@ function App() {
       setUnderDomain(true);
     }
 
-    if (e.keyCode === 38 && suggestionsActive) {
+    if (e.keyCode === 38 && !suggestionsActive) {
       setUnderDomain(false);
     }
 
@@ -191,11 +236,12 @@ function App() {
       setSelectedSuggestion(selectedSuggestion - 1);
     }
 
-    if (e.keyCode === 13 && cursor > -1) {
+    if (e.keyCode === 13 && cursor > -1 && !render) {
       console.log("we goo", sites[cursor]);
+      window.open(`https://${sites[cursor]?.domain}`, "__blank");
     }
 
-    if (e.keyCode === 13 && selectedSuggestion > -1) {
+    if (e.keyCode === 13 && selectedSuggestion > -1 && !render) {
       window.open(`${suggestions[selectedSuggestion]?.url}`, "__blank");
     }
 
@@ -258,6 +304,7 @@ function App() {
           setCursor={(x) => {
             setCursor(x);
           }}
+          updateSupabaseDomainCount={handleSupabaseDomainCount}
         />
         <div className="search">
           {!render && (
@@ -361,7 +408,14 @@ function App() {
         {}
       )
       .then((response) => {
-        setSites(response.data);
+        const sites = response.data;
+        setSites(
+          sites.map((site) => ({
+            ...site,
+            count:
+              domains.find((d) => d.domain_name === site.domain)?.count || 0,
+          }))
+        );
         setLoading(false);
       })
       .catch((error) => {
@@ -504,6 +558,27 @@ const Container = styled.div`
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+
+      /* width */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      /* Track */
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: var(--gray);
+        border-radius: 10px;
+      }
+
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--icon);
+      }
     }
 
     .section {
